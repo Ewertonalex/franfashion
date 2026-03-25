@@ -255,3 +255,71 @@ select:focus {
   font-size: 12px;
   text-align: center;
 }
+
+.successBanner {
+  margin: 10px 14px 0;
+  padding: 12px 12px;
+  border: 1px solid color-mix(in srgb, #22c55e 55%, var(--border));
+  background: color-mix(in srgb, #22c55e 12%, var(--bg));
+  color: color-mix(in srgb, #16a34a 85%, var(--text-h));
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 18px;
+}
+
+.modal {
+  width: min(680px, 100%);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitle {
+  font-weight: 650;
+  color: var(--text-h);
+}
+
+.modalBody {
+  padding: 14px;
+}
+
+.modalLine {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.modalHint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.modalFooter {
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}

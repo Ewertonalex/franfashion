@@ -1,6 +1,6 @@
 import './App.css'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { db, type Product } from './db'
 import { fileToDataUrl, formatMoneyBRL, toIntOrUndefined, toNumberOrUndefined } from './utils'
 
@@ -263,6 +263,9 @@ function Vendas() {
   const [busca, setBusca] = useState('')
   const [produtoId, setProdutoId] = useState<number | ''>('')
   const [quantidade, setQuantidade] = useState('1')
+  const [confirmModal, setConfirmModal] = useState<{ produto: Product; quantidade: number } | null>(null)
+  const [confirmando, setConfirmando] = useState(false)
+  const [sucesso, setSucesso] = useState('')
 
   const produtos = useLiveQuery(async () => {
     const todos = await db.produtos.orderBy('nome').toArray()
@@ -277,28 +280,44 @@ function Vendas() {
     return produtos.find((p) => p.id === produtoId)
   }, [produtos, produtoId])
 
-  async function registrarVenda() {
-    if (!selecionado?.id) return
-    const q = toIntOrUndefined(quantidade) ?? 0
-    if (q <= 0) return
+  useEffect(() => {
+    if (!sucesso) return
+    const t = window.setTimeout(() => setSucesso(''), 6000)
+    return () => window.clearTimeout(t)
+  }, [sucesso])
+
+  async function registrarVenda(produto: Product, q: number) {
+    if (!produto.id) return { novo: 0, excedeu: false }
+
+    let novo = 0
+    let excedeu = false
 
     await db.transaction('rw', db.produtos, db.vendas, async () => {
-      const atual = selecionado.quantidade ?? 0
-      const novo = Math.max(0, atual - q)
+      const fresh = await db.produtos.get(produto.id!)
+      const atual = fresh?.quantidade ?? 0
+      excedeu = q > atual
+      novo = Math.max(0, atual - q)
+
       await db.vendas.add({
-        produtoId: selecionado.id!,
+        produtoId: produto.id!,
         quantidade: q,
-        valorUnitario: selecionado.valor,
+        valorUnitario: produto.valor,
         criadoEm: Date.now(),
       })
-      await db.produtos.update(selecionado.id!, {
+      await db.produtos.update(produto.id!, {
         quantidade: novo,
         atualizadoEm: Date.now(),
       })
-      if (novo === 0) window.alert(`Estoque zerado: ${selecionado.nome || '(sem nome)'}`)
     })
 
-    setQuantidade('1')
+    return { novo, excedeu }
+  }
+
+  function pedirConfirmacao() {
+    if (!selecionado?.id) return
+    const q = toIntOrUndefined(quantidade) ?? 0
+    if (q <= 0) return
+    setConfirmModal({ produto: selecionado, quantidade: q })
   }
 
   return (
@@ -355,11 +374,93 @@ function Vendas() {
               'Selecione um produto para registrar a venda.'
             )}
           </div>
-          <button className="btn primary" type="button" onClick={() => void registrarVenda()} disabled={!selecionado}>
+          <button className="btn primary" type="button" onClick={pedirConfirmacao} disabled={!selecionado}>
             Confirmar venda
           </button>
         </div>
+
+        {sucesso ? <div className="successBanner" role="status">{sucesso}</div> : null}
       </div>
+
+      {confirmModal ? (
+        <div
+          className="modalOverlay"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget && !confirmando) setConfirmModal(null)
+          }}
+        >
+          <div className="modal">
+            <div className="modalHeader">
+              <div className="modalTitle">Confirmar venda</div>
+              <button
+                className="btn ghost"
+                type="button"
+                onClick={() => {
+                  if (!confirmando) setConfirmModal(null)
+                }}
+                disabled={confirmando}
+              >
+                Fechar
+              </button>
+            </div>
+            <div className="modalBody">
+              <div className="modalLine">
+                <strong>{confirmModal.produto.nome || '(sem nome)'}</strong>
+                {' · '}
+                Colmeia {confirmModal.produto.colmeia || '(não informada)'}
+              </div>
+              <div className="modalLine">
+                Quantidade: <strong>{confirmModal.quantidade}</strong>
+              </div>
+              <div className="modalLine">
+                Estoque atual: <strong>{confirmModal.produto.quantidade ?? 0}</strong>
+              </div>
+              {confirmModal.produto.valor !== undefined ? (
+                <div className="modalLine">
+                  Valor unitário: <strong>{formatMoneyBRL(confirmModal.produto.valor)}</strong>
+                </div>
+              ) : null}
+              <div className="modalHint">Ao confirmar, a venda será salva no banco local e o estoque será baixado.</div>
+            </div>
+            <div className="modalFooter">
+              <button
+                className="btn"
+                type="button"
+                onClick={() => {
+                  if (!confirmando) setConfirmModal(null)
+                }}
+                disabled={confirmando}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn primary"
+                type="button"
+                onClick={async () => {
+                  if (confirmando) return
+                  setConfirmando(true)
+                  try {
+                    const { novo, excedeu } = await registrarVenda(confirmModal.produto, confirmModal.quantidade)
+                    const nome = confirmModal.produto.nome || '(sem nome)'
+                    const base = `Venda registrada: ${confirmModal.quantidade} unidade(s) de ${nome}. Estoque agora: ${novo}.`
+                    const extra = excedeu ? ' Obs: a quantidade excedeu o estoque e o sistema zerou.' : novo === 0 ? ' Estoque zerado.' : ''
+                    setSucesso(base + extra)
+                    setConfirmModal(null)
+                    setQuantidade('1')
+                  } finally {
+                    setConfirmando(false)
+                  }
+                }}
+                disabled={confirmando}
+              >
+                {confirmando ? 'Confirmando…' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
