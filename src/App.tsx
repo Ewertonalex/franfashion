@@ -1006,12 +1006,6 @@ function Sobre() {
           <p>
             O backup leva <strong>100% do banco local</strong> (produtos, vendas e demais tabelas do sistema).
           </p>
-
-          <h3>Sincronização em nuvem (opcional)</h3>
-          <p>
-            Se você quiser que tudo fique igual automaticamente em qualquer dispositivo (sem exportar/importar), é necessário ligar uma{' '}
-            <strong>sincronização em nuvem com login</strong> (ex.: Supabase no plano gratuito). O banco local continua funcionando mesmo assim (offline-first).
-          </p>
         </div>
       </div>
     </div>
