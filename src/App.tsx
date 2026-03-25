@@ -567,6 +567,10 @@ function FinanceiroDashboard() {
   const chartOptions = useMemo(() => {
     return {
       responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: { top: 8, right: 6, bottom: 4, left: 4 },
+      },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -908,7 +912,7 @@ function Sobre() {
               Os dados ficam no <strong>próprio navegador</strong> (banco local). Atualizar o site no Netlify <strong>não apaga</strong> seus dados locais.
             </li>
             <li>
-              Cada dispositivo/navegador tem um banco diferente. Para usar em outra máquina/celular, use a aba <strong>Importar/Exportar</strong>.
+              Cada dispositivo/navegador tem um banco diferente. Para usar em outra máquina/celular, use a aba <strong>Backup</strong>.
             </li>
           </ul>
 
@@ -993,7 +997,7 @@ function Sobre() {
 
           <h3>Como não perder nada (backup)</h3>
           <p>
-            Para levar seus dados para outro aparelho (ou guardar uma cópia), use a aba <strong>Importar/Exportar</strong>.
+            Para levar seus dados para outro aparelho (ou guardar uma cópia), use a aba <strong>Backup</strong>.
           </p>
           <ol>
             <li>
@@ -1018,31 +1022,33 @@ function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <img className="brandLogo" src="/logo-franfashion.svg" alt="Fran Fashion" />
-          <div>
+          <img className="brandLogo" src="/logo-franfashion.svg" alt="" width={42} height={42} />
+          <div className="brandText">
             <div className="brandTitle">Fran Fashion</div>
             <div className="brandSub">Estoque • Vendas • Financeiro</div>
           </div>
         </div>
-        <nav className="tabs">
-          <button className={`tab ${aba === 'produtos' ? 'active' : ''}`} onClick={() => setAba('produtos')} type="button">
-            Produtos
-          </button>
-          <button className={`tab ${aba === 'vendas' ? 'active' : ''}`} onClick={() => setAba('vendas')} type="button">
-            Vendas
-          </button>
-          <button className={`tab ${aba === 'dashboard' ? 'active' : ''}`} onClick={() => setAba('dashboard')} type="button">
-            Dashboard
-          </button>
-          <button className={`tab ${aba === 'relatorio' ? 'active' : ''}`} onClick={() => setAba('relatorio')} type="button">
-            Relatório mensal
-          </button>
-          <button className={`tab ${aba === 'backup' ? 'active' : ''}`} onClick={() => setAba('backup')} type="button">
-            Importar/Exportar
-          </button>
-          <button className={`tab ${aba === 'sobre' ? 'active' : ''}`} onClick={() => setAba('sobre')} type="button">
-            Sobre
-          </button>
+        <nav className="tabsScroll" aria-label="Navegação principal">
+          <div className="tabs">
+            <button className={`tab ${aba === 'produtos' ? 'active' : ''}`} onClick={() => setAba('produtos')} type="button">
+              Produtos
+            </button>
+            <button className={`tab ${aba === 'vendas' ? 'active' : ''}`} onClick={() => setAba('vendas')} type="button">
+              Vendas
+            </button>
+            <button className={`tab ${aba === 'dashboard' ? 'active' : ''}`} onClick={() => setAba('dashboard')} type="button">
+              Dashboard
+            </button>
+            <button className={`tab ${aba === 'relatorio' ? 'active' : ''}`} onClick={() => setAba('relatorio')} type="button">
+              Relatório
+            </button>
+            <button className={`tab ${aba === 'backup' ? 'active' : ''}`} onClick={() => setAba('backup')} type="button">
+              Backup
+            </button>
+            <button className={`tab ${aba === 'sobre' ? 'active' : ''}`} onClick={() => setAba('sobre')} type="button">
+              Sobre
+            </button>
+          </div>
         </nav>
       </header>
       <main className="container">
